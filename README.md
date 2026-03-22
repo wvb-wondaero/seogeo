@@ -6,7 +6,7 @@
 ### 1단계 — 리포지토리 생성
 1. https://github.com 로그인
 2. 우측 상단 `+` → New repository
-3. Repository name: `gasi`
+3. Repository name: `seogeo`
 4. **Public** 선택 → Create repository
 
 ### 2단계 — 파일 업로드 (브라우저)
@@ -19,4 +19,4 @@
 2. Source: Deploy from a branch
 3. Branch: main / / (root) → Save
 
-접속 URL: https://[계정명].github.io/gasi/
+접속 URL: https://[계정명].github.io/seogeo/
