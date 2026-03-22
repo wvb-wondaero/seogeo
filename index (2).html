@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>가시 (Gasi) — SEO/GEO 가시성 분석기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #07090d;
+  --s1:       #0c1018;
+  --s2:       #111722;
+  --s3:       #181f2d;
+  --border:   rgba(255,255,255,0.06);
+  --border2:  rgba(255,255,255,0.11);
+  --text:     #dde2ec;
+  --muted:    #5a6478;
+  --dim:      #2e3547;
+  --teal:     #2ab4cc;
+  --teal-dim: rgba(42,180,204,0.1);
+  --teal-glow:rgba(42,180,204,0.22);
+  --navy:     #3a5068;
+  --red:      #f05252;
+  --orange:   #f59e0b;
+  --green:    #34d399;
+  --r:        10px;
+  --r2:       16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Pretendard','DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6}
+
+/* grid bg */
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+  background-size:52px 52px;
+  mask-image:radial-gradient(ellipse 100% 70% at 50% 0%,black 20%,transparent 80%)}
+.glow{position:fixed;top:-180px;left:50%;transform:translateX(-50%);width:800px;height:440px;
+  background:radial-gradient(ellipse,rgba(42,180,204,0.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+/* nav */
+nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(18px);background:rgba(7,9,13,0.88);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:860px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.5px;color:var(--text)}
+.logo span{color:var(--teal)}
+.beta{font-family:'DM Mono',monospace;font-size:10px;color:var(--teal);background:var(--teal-dim);border:1px solid rgba(42,180,204,0.25);padding:2px 9px;border-radius:100px;letter-spacing:1px}
+
+/* wrapper */
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 20px}
+
+/* hero */
+.hero{padding:80px 0 56px;text-align:center}
+.eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);display:inline-flex;align-items:center;gap:10px;margin-bottom:18px}
+.eyebrow::before,.eyebrow::after{content:'';width:20px;height:1px;background:var(--teal);opacity:.4}
+h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(34px,5.5vw,58px);line-height:1.07;letter-spacing:-2px;margin-bottom:18px}
+h1 em{font-style:normal;color:var(--teal)}
+.sub{font-size:15px;color:var(--muted);max-width:500px;margin:0 auto 36px;line-height:1.75;font-weight:300}
+
+/* input */
+.input-wrap{max-width:620px;margin:0 auto}
+.input-box{display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--border2);border-radius:var(--r2);padding:6px 6px 6px 18px;transition:border-color .2s,box-shadow .2s}
+.input-box:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-glow),0 8px 32px rgba(0,0,0,.4)}
+.input-box input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Mono',monospace;font-size:13px;color:var(--text);caret-color:var(--teal)}
+.input-box input::placeholder{color:var(--dim)}
+.btn{background:var(--teal);color:#07090d;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;border:none;cursor:pointer;padding:11px 22px;border-radius:10px;white-space:nowrap;transition:opacity .15s,transform .1s;letter-spacing:.2px}
+.btn:hover{opacity:.88}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);margin-top:12px;text-align:center;letter-spacing:.2px}
+
+/* stats row */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin:52px 0}
+.stat{background:var(--s1);padding:22px;text-align:center}
+.stat-n{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:var(--teal);letter-spacing:-1px;display:block}
+.stat-l{font-size:12px;color:var(--muted);margin-top:3px;display:block;font-weight:300}
+
+/* criteria */
+.sec-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:6px}
+.sec-title{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin-bottom:22px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:60px}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:18px;transition:border-color .2s}
+.card:hover{border-color:var(--border2)}
+.card-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.card-icon{width:30px;height:30px;background:var(--s2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.card-name{font-family:'Syne',sans-serif;font-weight:600;font-size:12px}
+.card-type{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;margin-left:auto;flex-shrink:0}
+.card-type.geo{color:var(--teal);background:var(--teal-dim)}
+.card-type.seo{color:#7abed4;background:rgba(58,80,104,.2)}
+.card-desc{font-size:11px;color:var(--muted);line-height:1.6;font-weight:300}
+.divider{height:1px;background:var(--border);margin:52px 0}
+
+/* loading panel */
+#panel{display:none;margin-top:28px;background:var(--s1);border:1px solid var(--border2);border-radius:var(--r2);padding:36px 28px}
+#loadingState{text-align:center}
+.spinner{width:44px;height:44px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .75s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:6px}
+.loading-url{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:24px}
+.steps{display:flex;flex-direction:column;gap:9px;max-width:380px;margin:0 auto;text-align:left}
+.step{display:flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--dim);transition:color .3s}
+.step.active{color:var(--teal)}
+.step.done{color:var(--muted)}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .3s}
+.step.active .dot{background:var(--teal);animation:pdot 1s infinite}
+.step.done .dot{background:var(--teal)}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* inline error */
+#errorState{display:none;text-align:center;padding:8px 0}
+.err-icon{font-size:26px;margin-bottom:10px}
+.err-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--red);margin-bottom:8px}
+.err-msg{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.7;max-width:460px;margin:0 auto}
+.btn-ghost{margin-top:18px;background:var(--s2);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:9px 22px;font-family:'Syne',sans-serif;font-size:12px;cursor:pointer;transition:border-color .2s}
+.btn-ghost:hover{border-color:var(--border2)}
+
+/* error box (above results) */
+#errorBox{display:none;background:rgba(240,82,82,.06);border:1px solid rgba(240,82,82,.2);border-radius:var(--r);padding:12px 18px;font-size:12px;color:var(--red);margin:16px 0;font-family:'DM Mono',monospace}
+
+/* results */
+#results{display:none;margin-top:28px}
+.res-url{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:6px}
+.res-url span{color:var(--teal)}
+
+/* score hero */
+.score-hero{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r2);padding:30px;display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;margin-bottom:16px}
+.score-ring{width:90px;height:90px;border-radius:50%;border:2px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-num{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;letter-spacing:-2px;line-height:1}
+.score-denom{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)}
+.score-grade{font-family:'Syne',sans-serif;font-weight:800;font-size:44px;letter-spacing:-2px}
+.score-label{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:4px}
+.score-desc{font-size:12px;color:var(--muted);font-weight:300}
+
+/* sub scores */
+.sub-scores{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.sub-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.sub-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sub-name{font-family:'Syne',sans-serif;font-weight:600;font-size:12px}
+.sub-score{font-family:'DM Mono',monospace;font-size:20px;font-weight:500}
+.bar{height:3px;background:var(--s3);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.bar-fill{height:100%;border-radius:2px;width:0%;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-family:'DM Mono',monospace;font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
+.tag.pass{color:var(--green);border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.06)}
+.tag.fail{color:var(--red);border-color:rgba(240,82,82,.25);background:rgba(240,82,82,.06)}
+.tag.warn{color:var(--orange);border-color:rgba(245,158,11,.25);background:rgba(245,158,11,.06)}
+
+/* geo pillars */
+.geo-block{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:24px;margin-bottom:16px}
+.geo-block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.block-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.geo-score{font-family:'DM Mono',monospace;font-size:18px;color:var(--teal)}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pillar{background:var(--s2);border-radius:8px;padding:14px;text-align:center}
+.pillar-n{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:3px}
+.pillar-l{font-size:10px;color:var(--muted);font-weight:300;line-height:1.4}
+
+/* issues */
+.issues-block{margin-bottom:16px}
+.issues-head{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.cnt{font-family:'DM Mono',monospace;font-size:10px;background:var(--s2);color:var(--muted);padding:2px 8px;border-radius:100px}
+.issue{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:7px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start}
+.issue:hover{border-color:var(--border2)}
+.pdot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.pc{background:var(--red);box-shadow:0 0 7px var(--red)}.ph{background:var(--orange)}.pm{background:var(--teal)}.pl{background:var(--dim)}
+.issue-name{font-size:12px;font-weight:500;margin-bottom:3px}
+.issue-desc{font-size:11px;color:var(--muted);font-weight:300;line-height:1.5}
+.issue-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.impact{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px}
+.ih{color:var(--red);background:rgba(240,82,82,.08);border:1px solid rgba(240,82,82,.18)}
+.im{color:var(--orange);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18)}
+.effort-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--dim)}
+
+/* artifacts */
+.artifact-block{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:24px;margin-bottom:16px}
+.artifact-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.ai-badge{font-family:'DM Mono',monospace;font-size:9px;color:var(--teal);background:var(--teal-dim);border:1px solid rgba(42,180,204,.2);padding:2px 9px;border-radius:100px;letter-spacing:1px}
+.tabs{display:flex;gap:3px;background:var(--s2);border-radius:7px;padding:3px;margin-bottom:14px}
+.tab-btn{flex:1;padding:7px 10px;border-radius:5px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s;border:none;background:transparent}
+.tab-btn.active{background:var(--s1);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tab-pane{background:#050810;border-radius:8px;padding:16px;border:1px solid var(--border);display:none}
+.tab-pane.active{display:block}
+.tab-pane pre{font-family:'DM Mono',monospace;font-size:11px;color:#9ba8be;line-height:1.7;white-space:pre-wrap;word-break:break-all}
+.copy-btn{background:var(--s2);color:var(--muted);border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;cursor:pointer;margin-top:10px;transition:all .2s}
+.copy-btn:hover{color:var(--teal);border-color:rgba(42,180,204,.3)}
+
+/* recommendations */
+.rec-block{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:24px;margin-bottom:16px}
+.rec-content{font-size:12px;color:var(--muted);line-height:1.9;font-weight:300}
+.rec-content strong{color:var(--text);font-weight:500}
+.rec-content .sec-head{color:var(--text);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;display:block;margin:14px 0 6px}
+
+/* re-analyze */
+.re-btn{display:flex;justify-content:center;margin:28px 0}
+
+/* footer */
+footer{border-top:1px solid var(--border);padding:28px 0;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--dim)}
+footer span{color:var(--teal)}
+
+/* anim */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .45s ease forwards}
+
+@media(max-width:600px){
+  .cards{grid-template-columns:1fr}
+  .sub-scores{grid-template-columns:1fr}
+  .pillars{grid-template-columns:1fr 1fr}
+  .score-hero{grid-template-columns:1fr;text-align:center}
+  .stats{grid-template-columns:1fr}
+  h1{font-size:32px}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="glow"></div>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">가<span>시</span></div>
+    <div class="beta">BETA</div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow" id="hEyebrow">SEO + GEO 가시성 분석</div>
+    <h1 id="hTitle">당신의 사이트는<br/><em>AI에게 보이고</em> 있나요?</h1>
+    <p class="sub" id="hSub">URL 하나로 검색엔진 SEO와 AI 인용 최적화(GEO)를 동시에 진단합니다.<br/>즉시 실행 가능한 개선안을 자동으로 제공합니다.</p>
+
+    <div class="input-wrap">
+      <div class="input-box" id="inputBox">
+        <span style="color:var(--muted);font-size:15px">🔗</span>
+        <input type="url" id="urlInput" placeholder="https://yoursite.com" autocomplete="off" spellcheck="false"/>
+        <button class="btn" id="analyzeBtn" onclick="startAnalysis()">분석 시작</button>
+      </div>
+      <p class="hint" id="hHint">예시: https://stripe.com &nbsp;·&nbsp; https://notion.so &nbsp;·&nbsp; https://linear.app</p>
+    </div>
+
+    <!-- LOADING / ERROR PANEL — inline below input -->
+    <div id="panel">
+      <div id="loadingState">
+        <div class="spinner"></div>
+        <div class="loading-title">분석 중입니다</div>
+        <div class="loading-url" id="loadingUrl"></div>
+        <div class="steps">
+          <div class="step" id="s1"><div class="dot"></div>페이지 크롤링 및 HTML 추출</div>
+          <div class="step" id="s2"><div class="dot"></div>SEO 기술 지표 분석</div>
+          <div class="step" id="s3"><div class="dot"></div>E-E-A-T 콘텐츠 품질 평가</div>
+          <div class="step" id="s4"><div class="dot"></div>GEO 에이전트 가독성 측정</div>
+          <div class="step" id="s5"><div class="dot"></div>아티팩트 및 개선안 생성</div>
+        </div>
+      </div>
+      <div id="errorState">
+        <div class="err-icon">⚠</div>
+        <div class="err-title">분석 실패</div>
+        <div class="err-msg" id="errMsg"></div>
+        <button class="btn-ghost" onclick="resetAll()">← 다시 시도</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats" id="statsRow">
+    <div class="stat"><span class="stat-n">12</span><span class="stat-l">SEO 분석 항목</span></div>
+    <div class="stat"><span class="stat-n">9</span><span class="stat-l">GEO 측정 지표</span></div>
+    <div class="stat"><span class="stat-n">AI</span><span class="stat-l">자동 개선안 생성</span></div>
+  </div>
+
+  <!-- CRITERIA -->
+  <div id="criteriaSection">
+    <span class="sec-tag">분석 기준</span>
+    <div class="sec-title">무엇을 측정하는가</div>
+    <div class="cards">
+      <div class="card"><div class="card-head"><div class="card-icon">⚙️</div><div class="card-name">기술적 SEO</div><div class="card-type seo">SEO</div></div><div class="card-desc">Core Web Vitals, HTTPS, 크롤링 가능성, 구조화 데이터, 사이트맵, robots.txt</div></div>
+      <div class="card"><div class="card-head"><div class="card-icon">📄</div><div class="card-name">온페이지 최적화</div><div class="card-type seo">SEO</div></div><div class="card-desc">타이틀/메타 태그, H 태그 구조, 이미지 alt, 내부 링크, 키워드 밀도</div></div>
+      <div class="card"><div class="card-head"><div class="card-icon">🤖</div><div class="card-name">AI 인용 가능성</div><div class="card-type geo">GEO</div></div><div class="card-desc">Princeton 9가지 방법론 기반. 사실 기술 밀도, 통계·데이터 보유 여부</div></div>
+      <div class="card"><div class="card-head"><div class="card-icon">🏗️</div><div class="card-name">구조화 명확성</div><div class="card-type geo">GEO</div></div><div class="card-desc">JSON-LD 스키마, 시맨틱 HTML, FAQ 마크업, 청킹 시 문맥 유실 방지</div></div>
+      <div class="card"><div class="card-head"><div class="card-icon">✍️</div><div class="card-name">콘텐츠 품질 E-E-A-T</div><div class="card-type seo">SEO</div></div><div class="card-desc">경험·전문성·권위성·신뢰성. 저자 정보, 출처 링크, 전문가 인용</div></div>
+      <div class="card"><div class="card-head"><div class="card-icon">🎯</div><div class="card-name">에이전트 가독성</div><div class="card-type geo">GEO</div></div><div class="card-desc">llms.txt 여부, 대명사 오용, 문맥 단절, JS 의존성 등 AI 이해 방해 요소</div></div>
+      <div class="card"><div class="card-head"><div class="card-icon">📱</div><div class="card-name">모바일 최적화</div><div class="card-type seo">SEO</div></div><div class="card-desc">반응형 레이아웃, 터치 타겟 크기, 폰트 가독성, 모바일 속도</div></div>
+      <div class="card"><div class="card-head"><div class="card-icon">💬</div><div class="card-name">질의응답 커버리지</div><div class="card-type geo">GEO</div></div><div class="card-desc">People Also Ask 커버 비율, FAQ 스키마, 대화형 쿼리 대응력</div></div>
+    </div>
+    <div class="divider"></div>
+  </div>
+
+  <div id="errorBox"></div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="res-url">분석 완료 → <span id="resUrl"></span></div>
+
+    <div class="score-hero fade-up">
+      <div class="score-ring" id="scoreRing">
+        <div class="score-num" id="scoreNum">—</div>
+        <div class="score-denom">/100</div>
+      </div>
+      <div>
+        <div class="score-label" id="scoreLabel">Visibility Score</div>
+        <div class="score-desc" id="scoreDesc">—</div>
+      </div>
+      <div class="score-grade" id="scoreGrade">—</div>
+    </div>
+
+    <div class="sub-scores">
+      <div class="sub-card">
+        <div class="sub-head"><div class="sub-name">SEO Score</div><div class="sub-score" id="seoNum" style="color:var(--teal)">—</div></div>
+        <div class="bar"><div class="bar-fill" id="seoBar" style="background:var(--teal)"></div></div>
+        <div class="tags" id="seoTags"></div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-head"><div class="sub-name">GEO Score</div><div class="sub-score" id="geoNum" style="color:var(--teal)">—</div></div>
+        <div class="bar"><div class="bar-fill" id="geoBar" style="background:var(--teal)"></div></div>
+        <div class="tags" id="geoTags"></div>
+      </div>
+    </div>
+
+    <div class="geo-block">
+      <div class="geo-block-head"><div class="block-title">GEO 세부 분석 — 에이전트 친화도</div><div class="geo-score" id="geoDetail">—</div></div>
+      <div class="pillars" id="pillarsGrid"></div>
+    </div>
+
+    <div class="issues-block">
+      <div class="issues-head">발견된 이슈 <span class="cnt" id="issueCount">0개</span></div>
+      <div id="issueList"></div>
+    </div>
+
+    <div class="artifact-block">
+      <div class="artifact-head">
+        <div class="block-title" style="font-size:14px">자동 생성 아티팩트</div>
+        <div class="ai-badge">AI GENERATED</div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('llms',this)">llms.txt</button>
+        <button class="tab-btn" onclick="switchTab('jsonld',this)">JSON-LD</button>
+        <button class="tab-btn" onclick="switchTab('meta',this)">Meta Tags</button>
+        <button class="tab-btn" onclick="switchTab('faq',this)">FAQ Schema</button>
+      </div>
+      <div class="tab-pane active" id="tab-llms"><pre id="art-llms"></pre><button class="copy-btn" onclick="copyTab('llms')">복사</button></div>
+      <div class="tab-pane" id="tab-jsonld"><pre id="art-jsonld"></pre><button class="copy-btn" onclick="copyTab('jsonld')">복사</button></div>
+      <div class="tab-pane" id="tab-meta"><pre id="art-meta"></pre><button class="copy-btn" onclick="copyTab('meta')">복사</button></div>
+      <div class="tab-pane" id="tab-faq"><pre id="art-faq"></pre><button class="copy-btn" onclick="copyTab('faq')">복사</button></div>
+    </div>
+
+    <div class="rec-block">
+      <div class="artifact-head">
+        <div class="block-title" style="font-size:14px">AI 종합 진단 및 개선 로드맵</div>
+        <div class="ai-badge">CLAUDE ANALYSIS</div>
+      </div>
+      <div class="rec-content" id="recContent"></div>
+    </div>
+
+    <div class="re-btn">
+      <button class="btn-ghost" onclick="resetAll()">← 새 URL 분석</button>
+    </div>
+  </div>
+</div>
+
+<footer><div>가시 (Gasi) &nbsp;·&nbsp; SEO + GEO 가시성 분석기 &nbsp;·&nbsp; Powered by <span>Claude API</span></div></footer>
+
+<script>
+/* ═══════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════ */
+const API = 'https://api.anthropic.com/v1/messages';
+const MODEL = 'claude-sonnet-4-20250514';
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const arts = {};
+const HERO_IDS = ['hEyebrow','hTitle','hSub','hHint'];
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const $ = id => document.getElementById(id);
+
+function grade(score) {
+  if (score >= 90) return {g:'S', label:'Dominant',  col:'#2ab4cc', desc:'업계 최상위. AI 엔진에서 우선 인용됩니다.'};
+  if (score >= 75) return {g:'A', label:'Strong',    col:'#34d399', desc:'높은 가시성. 일부 GEO 개선으로 최상위 도달 가능합니다.'};
+  if (score >= 60) return {g:'B', label:'Visible',   col:'#60a5fa', desc:'기본 노출은 확보됐으나 핵심 개선 여지가 있습니다.'};
+  if (score >= 40) return {g:'C', label:'Weak',      col:'#f59e0b', desc:'다수의 문제로 AI 인용 가능성이 낮습니다.'};
+  return              {g:'D', label:'Invisible', col:'#f05252', desc:'즉각적인 조치가 필요합니다. AI에게 거의 보이지 않습니다.'};
+}
+
+function setStep(idx) {
+  ['s1','s2','s3','s4','s5'].forEach((id, i) => {
+    $(`${id}`) && $(`${id}`).classList.remove('active','done');
+    if (i < idx)  $(`${id}`) && $(`${id}`).classList.add('done');
+    if (i === idx) $(`${id}`) && $(`${id}`).classList.add('active');
+  });
+}
+
+function showError(msg) {
+  $('loadingState').style.display = 'none';
+  $('errMsg').textContent = msg;
+  $('errorState').style.display = 'block';
+  $('analyzeBtn').disabled = false;
+}
+
+function resetAll() {
+  $('results').style.display = 'none';
+  $('panel').style.display = 'none';
+  $('loadingState').style.display = 'block';
+  $('errorState').style.display = 'none';
+  $('urlInput').value = '';
+  $('analyzeBtn').disabled = false;
+  HERO_IDS.forEach(id => { const e=$(`${id}`); if(e) e.style.display=''; });
+  $('statsRow').style.display = '';
+  $('criteriaSection').style.display = '';
+  setStep(-1);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ═══════════════════════════════════════════
+   API
+═══════════════════════════════════════════ */
+async function ask(system, user, maxTokens) {
+  const r = await fetch(API, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({model:MODEL, max_tokens:maxTokens,
+      system, messages:[{role:'user', content:user}]})
+  });
+  if (!r.ok) throw new Error('API error: ' + r.status);
+  const d = await r.json();
+  return d.content[0].text;
+}
+
+function parseJSON(text) {
+  const t = text.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/,'').trim();
+  const s = t.indexOf('{'), e = t.lastIndexOf('}');
+  if (s === -1 || e === -1) throw new Error('JSON not found in response');
+  return JSON.parse(t.slice(s, e+1));
+}
+
+/* ═══════════════════════════════════════════
+   KOREAN LABEL MAPS — no Korean in prompts
+═══════════════════════════════════════════ */
+const SEO_LABELS = {
+  'https':      'HTTPS',
+  'meta':       '메타태그',
+  'sitemap':    '사이트맵',
+  'schema':     '구조화 데이터',
+  'alt':        '이미지 alt',
+  'links':      '내부링크',
+  'mobile':     '모바일 최적화',
+  'cwv':        'Core Web Vitals',
+  'canonical':  '캐노니컬',
+  'robots':     'robots.txt',
+};
+const GEO_LABELS = {
+  'llmstxt':    'llms.txt',
+  'jsonld':     'JSON-LD',
+  'faq':        'FAQ 스키마',
+  'semantic':   '시맨틱 HTML',
+  'author':     '저자 정보',
+  'stats':      '통계 데이터',
+  'pronouns':   '대명사 명확성',
+  'chunking':   '청킹 적합성',
+};
+const PILLAR_LABELS = {
+  'citation':    'AI 인용 가능성',
+  'structure':   '구조화 명확성',
+  'readability': '에이전트 가독성',
+  'eeat':        'E-E-A-T 신호',
+  'qa':          'QA 커버리지',
+  'authority':   '도메인 권위',
+};
+const PRIORITY_KO = {critical:'심각', high:'높음', medium:'보통', low:'낮음'};
+const EFFORT_KO   = {easy:'★☆☆ 쉬움', medium:'★★☆ 보통', hard:'★★★ 어려움'};
+
+function labelSEO(k)    { return SEO_LABELS[k]    || k; }
+function labelGEO(k)    { return GEO_LABELS[k]    || k; }
+function labelPillar(k) { return PILLAR_LABELS[k] || k; }
+
+/* ═══════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════ */
+async function startAnalysis() {
+  let raw = $('urlInput').value.trim();
+  if (!raw) return;
+  if (!raw.startsWith('http')) raw = 'https://' + raw;
+  try { new URL(raw); } catch { showError('올바른 URL 형식이 아닙니다.'); return; }
+
+  const url = raw;
+  const domain = new URL(url).hostname;
+
+  // Hide hero & show panel
+  HERO_IDS.forEach(id => { const e=$(id); if(e) e.style.display='none'; });
+  $('statsRow').style.display = 'none';
+  $('criteriaSection').style.display = 'none';
+  $('results').style.display = 'none';
+  $('loadingState').style.display = 'block';
+  $('errorState').style.display = 'none';
+  $('panel').style.display = 'block';
+  $('analyzeBtn').disabled = true;
+  $('loadingUrl').textContent = url;
+  $('panel').scrollIntoView({behavior:'smooth', block:'center'});
+
+  const SYS = 'You are an SEO/GEO analysis engine. Return only what is asked. No preamble. No markdown fences.';
+
+  try {
+    /* ── CALL 1: Scores + metrics + pillars ────────────────────────── */
+    setStep(0);
+    await sleep(400);
+    setStep(1);
+
+    // All keys are short English tokens — no Korean, no long strings = safe JSON
+    const p1 = `Analyze ${url} (domain: ${domain}) for SEO and GEO performance.
+Return ONLY this JSON object with real values. Use the EXACT key names shown.
+seoScore: integer 0-60
+geoScore: integer 0-40
+seoMetrics: array of {key, status} where key is one of [https,meta,sitemap,schema,alt,links,mobile,cwv] and status is pass/fail/warn
+geoMetrics: array of {key, status} where key is one of [llmstxt,jsonld,faq,semantic,author,stats] and status is pass/fail/warn
+geoPillars: array of {key, score} where key is one of [citation,structure,readability,eeat,qa,authority] and score is 0-100
+
+Example (replace with real values):
+{"seoScore":42,"geoScore":22,"seoMetrics":[{"key":"https","status":"pass"},{"key":"meta","status":"warn"},{"key":"sitemap","status":"fail"},{"key":"schema","status":"fail"},{"key":"alt","status":"warn"},{"key":"links","status":"pass"},{"key":"mobile","status":"pass"},{"key":"cwv","status":"warn"}],"geoMetrics":[{"key":"llmstxt","status":"fail"},{"key":"jsonld","status":"fail"},{"key":"faq","status":"fail"},{"key":"semantic","status":"warn"},{"key":"author","status":"warn"},{"key":"stats","status":"warn"}],"geoPillars":[{"key":"citation","score":35},{"key":"structure","score":20},{"key":"readability","score":30},{"key":"eeat","score":45},{"key":"qa","score":25},{"key":"authority","score":55}]}`;
+
+    const r1 = await ask(SYS, p1, 700);
+    const scores = parseJSON(r1);
+
+    /* ── CALL 2: Issues ─────────────────────────────────────────────── */
+    setStep(2);
+    await sleep(300);
+    setStep(3);
+
+    // Issues: all string values kept short, no long Korean sentences in prompt
+    const p2 = `List 4-5 SEO/GEO issues for ${url} (domain: ${domain}).
+Return ONLY a JSON array. Each item: {priority, name_en, name_ko, desc_ko, impact, effort}
+priority: critical/high/medium/low
+name_en: short English slug
+name_ko: short Korean title (max 15 chars)
+desc_ko: one Korean sentence (max 40 chars)
+impact: high/med
+effort: easy/medium/hard
+
+Return ONLY the JSON array starting with [`;
+
+    const r2 = await ask(SYS, p2, 600);
+    let issues = [];
+    try {
+      const t = r2.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/,'').trim();
+      const s = t.indexOf('['), e = t.lastIndexOf(']');
+      if (s !== -1 && e !== -1) issues = JSON.parse(t.slice(s, e+1));
+    } catch(_) { issues = []; }
+
+    /* ── CALL 3: Artifacts + recommendations ─────────────────────────── */
+    setStep(4);
+
+    const p3 = `Generate SEO/GEO artifacts for ${url} (domain: ${domain}).
+Output 5 sections. Each section starts with a line containing only the delimiter shown.
+Do not add any text before the first delimiter or after the last section.
+
+===LLMS===
+(write llms.txt content here — plain text, real content for ${domain})
+===JSONLD===
+(write one <script type="application/ld+json">...<\/script> block here)
+===META===
+(write optimized HTML meta tags here: title, description, og:title, og:description)
+===FAQ===
+(write one <script type="application/ld+json"> FAQPage schema with 3 Q&A pairs <\/script>)
+===REC===
+(write Korean improvement roadmap using ## headers and **bold** for action items)`;
+
+    const r3 = await ask(SYS, p3, 1400);
+
+    function section(text, name) {
+      const marker = '===' + name + '===';
+      const si = text.indexOf(marker);
+      if (si === -1) return '';
+      const ci = text.indexOf('\n', si) + 1;
+      const markers = ['===LLMS===','===JSONLD===','===META===','===FAQ===','===REC==='];
+      let end = text.length;
+      for (const m of markers) {
+        if (m === marker) continue;
+        const mi = text.indexOf(m, ci);
+        if (mi !== -1 && mi < end) end = mi;
+      }
+      return text.slice(ci, end).trim();
+    }
+
+    arts.llms   = section(r3, 'LLMS');
+    arts.jsonld  = section(r3, 'JSONLD');
+    arts.meta    = section(r3, 'META');
+    arts.faq     = section(r3, 'FAQ');
+    const rec    = section(r3, 'REC');
+
+    // Done
+    ['s1','s2','s3','s4','s5'].forEach(id => {
+      $(id) && $(id).classList.remove('active');
+      $(id) && $(id).classList.add('done');
+    });
+    await sleep(300);
+
+    render(url, scores, issues, arts, rec);
+
+  } catch(err) {
+    showError(err.message);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════ */
+function render(url, s, issues, art, rec) {
+  $('panel').style.display = 'none';
+  $('results').style.display = 'block';
+  $('resUrl').textContent = url;
+
+  const total = Math.min(100, (s.seoScore||0) + (s.geoScore||0));
+  const {g, label, col, desc} = grade(total);
+
+  $('scoreNum').textContent = total;
+  $('scoreNum').style.color = col;
+  $('scoreRing').style.borderColor = col;
+  $('scoreGrade').textContent = g;
+  $('scoreGrade').style.color = col;
+  $('scoreLabel').textContent = label + ' — Visibility Score';
+  $('scoreDesc').textContent = desc;
+
+  // SEO
+  const seo = s.seoScore||0;
+  $('seoNum').textContent = seo + '/60';
+  setTimeout(() => $('seoBar').style.width = (seo/60*100)+'%', 150);
+  $('seoTags').innerHTML = (s.seoMetrics||[]).map(m =>
+    `<span class="tag ${m.status}">${labelSEO(m.key)}</span>`).join('');
+
+  // GEO
+  const geo = s.geoScore||0;
+  $('geoNum').textContent = geo + '/40';
+  $('geoDetail').textContent = geo + '/40';
+  setTimeout(() => $('geoBar').style.width = (geo/40*100)+'%', 150);
+  $('geoTags').innerHTML = (s.geoMetrics||[]).map(m =>
+    `<span class="tag ${m.status}">${labelGEO(m.key)}</span>`).join('');
+
+  // Pillars
+  $('pillarsGrid').innerHTML = (s.geoPillars||[]).map(p => {
+    const c = p.score >= 70 ? 'var(--green)' : p.score >= 45 ? 'var(--orange)' : 'var(--red)';
+    return `<div class="pillar"><div class="pillar-n" style="color:${c}">${p.score}</div><div class="pillar-l">${labelPillar(p.key)}</div></div>`;
+  }).join('');
+
+  // Issues
+  $('issueCount').textContent = issues.length + '개';
+  const dotC = {critical:'pc', high:'ph', medium:'pm', low:'pl'};
+  $('issueList').innerHTML = issues.map(i => `
+    <div class="issue">
+      <div class="pdot ${dotC[i.priority]||'pl'}"></div>
+      <div>
+        <div class="issue-name">${i.name_ko || i.name_en || ''}</div>
+        <div class="issue-desc">${i.desc_ko || ''}</div>
+      </div>
+      <div class="issue-meta">
+        <span class="impact ${i.impact==='high'?'ih':'im'}">${i.impact==='high'?'높은 영향':'중간 영향'}</span>
+        <span class="effort-lbl">${EFFORT_KO[i.effort]||i.effort||''}</span>
+      </div>
+    </div>`).join('');
+
+  // Artifacts
+  $('art-llms').textContent   = art.llms   || '(생성 실패)';
+  $('art-jsonld').textContent = art.jsonld || '(생성 실패)';
+  $('art-meta').textContent   = art.meta   || '(생성 실패)';
+  $('art-faq').textContent    = art.faq    || '(생성 실패)';
+
+  // Recommendations
+  $('recContent').innerHTML = (rec || '')
+    .replace(/^## (.+)$/gm, '<span class="sec-head">$1</span>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br/>');
+
+  $('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ═══════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  $('tab-'+name).classList.add('active');
+}
+
+function copyTab(name) {
+  navigator.clipboard.writeText(arts[name]||'').then(() => {
+    const btns = document.querySelectorAll('.copy-btn');
+    btns.forEach(b => { if(b.getAttribute('onclick').includes(name)) {
+      const o = b.textContent; b.textContent = '✓ 복사됨';
+      setTimeout(() => b.textContent = o, 1500);
+    }});
+  });
+}
+
+$('urlInput').addEventListener('keydown', e => { if(e.key==='Enter') startAnalysis(); });
+</script>
+</body>
+</html>
